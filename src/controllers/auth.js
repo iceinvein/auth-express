@@ -7,12 +7,10 @@ const { jwtCookieExpiresIn } = require('../config');
 // @route POST /api/v1/auth/register
 // @access Public
 exports.register = asyncHandler(async (req, res, next) => {
-  const {
-    firstname, lastname, email, password, role,
-  } = req.body;
+  const { firstname, lastname, email, password, role } = req.body;
 
   try {
-    await User.create({
+    const user = await User.create({
       firstname,
       lastname,
       email,
@@ -20,10 +18,11 @@ exports.register = asyncHandler(async (req, res, next) => {
       role,
     });
 
-    res.status(200)
-      .json({
-        success: true,
-      });
+    res.status(200).json({
+      success: true,
+      // eslint-disable-next-line no-underscore-dangle
+      id: user._id,
+    });
   } catch (error) {
     next(error);
   }
@@ -33,7 +32,9 @@ const sendTokenResponse = (user, expires, statusCode, res) => {
   const token = user.getSignedJwtToken();
 
   const options = {
-    expires: expires ? new Date(Date.now() + jwtCookieExpiresIn * 24 * 60 * 60 * 1000) : false,
+    expires: expires
+      ? new Date(Date.now() + jwtCookieExpiresIn * 24 * 60 * 60 * 1000)
+      : false,
     httpOnly: true,
   };
 
@@ -41,7 +42,8 @@ const sendTokenResponse = (user, expires, statusCode, res) => {
     options.secure = true;
   }
 
-  res.status(statusCode)
+  res
+    .status(statusCode)
     .cookie('token', token, options)
     .json({
       success: true,
@@ -79,7 +81,7 @@ exports.login = asyncHandler(async (req, res, next) => {
 });
 
 // @desc Get current logged in user
-// @route GET /api/v1/auth/user
+// @route GET /api/v1/auth/currentUser
 // @access Private
 exports.getCurrentUser = asyncHandler(async (req, res, next) => {
   try {
@@ -109,12 +111,10 @@ exports.logout = asyncHandler(async (req, res, next) => {
     options.secure = true;
   }
 
-  res.status(200)
-    .cookie('token', 'loggedOut', options)
-    .json({
-      success: true,
-      message: 'User logged out.',
-    });
+  res.status(200).cookie('token', 'loggedOut', options).json({
+    success: true,
+    message: 'User logged out.',
+  });
 
   next();
 });

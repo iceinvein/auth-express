@@ -5,44 +5,47 @@ const { jwtSecret, jwtExpiresIn } = require('../config');
 
 const { Schema, model } = mongoose;
 
-const UserSchema = new Schema({
-  firstname: {
-    type: String,
-    required: [true, 'First Name is required'],
+const UserSchema = new Schema(
+  {
+    firstname: {
+      type: String,
+      required: [true, 'First Name is required'],
+    },
+    lastname: {
+      type: String,
+      required: [true, 'Last Name is required'],
+    },
+    email: {
+      type: String,
+      required: [true, 'Email is required'],
+      unique: true,
+      match: [
+        /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+        'Invalid email address',
+      ],
+    },
+    role: {
+      type: String,
+      enum: ['user', 'publisher'],
+      default: 'user',
+    },
+    password: {
+      type: String,
+      required: [true, 'Password is required'],
+      minlength: [8, 'Password length required: 8'],
+      select: false,
+    },
+    resetPasswordToken: String,
+    resetPasswordExpire: Date,
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
-  lastname: {
-    type: String,
-    required: [true, 'Last Name is required'],
-  },
-  email: {
-    type: String,
-    required: [true, 'Email is required'],
-    unique: true,
-    match: [
-      /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
-      'Invalid email address',
-    ],
-  },
-  role: {
-    type: String,
-    enum: ['user', 'publisher'],
-    default: 'user',
-  },
-  password: {
-    type: String,
-    required: [true, 'Password is required'],
-    minlength: [8, 'Password length required: 8'],
-    select: false,
-  },
-  resetPasswordToken: String,
-  resetPasswordExpire: Date,
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-}, {
-  collection: 'Users',
-});
+  {
+    collection: 'Users',
+  }
+);
 
 UserSchema.pre('save', async function check(next) {
   const salt = await bcrypt.genSalt(10);

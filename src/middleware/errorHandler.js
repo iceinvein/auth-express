@@ -1,4 +1,5 @@
 const ErrorResponse = require('../utils/errorResponse');
+const log = require('../logger');
 
 const errorHandler = (err, req, res, next) => {
   let error = { ...err };
@@ -7,30 +8,30 @@ const errorHandler = (err, req, res, next) => {
 
   // Mongoose bad ObjectId
   if (err.name === 'CastError') {
-    const message = 'Resource not found';
-    error = new ErrorResponse(message, 404);
+    error = new ErrorResponse('Item not found', 404);
   }
 
   // Mongoose duplicate key
   if (err.code === 11000) {
-    const message = 'Duplicate Error';
-    error = new ErrorResponse(message, 400);
+    error = new ErrorResponse('Duplicate Error', 400);
   }
 
   // Mongoose validation error
   if (err.name === 'ValidationError') {
-    const errors = Object.values(err.errors).map((el) => ({
-      [el.path]: el.message,
-    }));
+    const errors = {};
+    Object.values(err.errors).forEach((el) => {
+      errors[el.path] = el.message;
+    });
     error = {
-      message: errors,
       statusCode: 400,
+      message: errors,
     };
   }
 
+  log.error(error.message);
+
   res.status(error.statusCode || 500).json({
-    success: false,
-    error: error || 'Server Error',
+    error: error.message || 'Server Error',
   });
 
   next();

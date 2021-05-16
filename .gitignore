@@ -5,3 +5,6 @@ mongo-db.yaml
 test.http
 .env
 logs/*.log
+.env.dev
+.env.test
+mochawesome-report

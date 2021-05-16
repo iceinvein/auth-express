@@ -1,0 +1,12 @@
+## .env
+```
+NODE_ENV=
+
+PORT=
+
+MONGODB_URL=
+
+JWT_SECRET=
+JWT_EXPIRE=
+JWT_COOKIE_EXPIRE=
+```
